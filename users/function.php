@@ -140,7 +140,7 @@ function getUser($userParams){
 }
 
 
-//UDATE USERS
+//UPDATE USERS
 function updateUser($userInput, $userParams){
 
     global $conn;
