@@ -1,7 +1,7 @@
 <?php
 
 require '../inc/dbcon.php';
-
+//error422
 function error422($message){
 
     $data = [
@@ -12,7 +12,7 @@ function error422($message){
     echo json_encode($data);
     exit();
 }
-
+//CREATE USERS
 function storeUser($userInput){
 
     global $conn;
@@ -56,7 +56,7 @@ function storeUser($userInput){
    
 }
 
-
+//READ USERS
 function getUserList(){
 
     global $conn;
@@ -96,6 +96,8 @@ function getUserList(){
         return json_encode($data);
     }
 }
+
+//GET USER WITH ID
 function getUser($userParams){
 
     global $conn;
@@ -137,6 +139,8 @@ function getUser($userParams){
     }
 }
 
+
+//UDATE USERS
 function updateUser($userInput, $userParams){
 
     global $conn;
@@ -190,6 +194,8 @@ function updateUser($userInput, $userParams){
    
 }
 
+
+//DELETE USERS
 function deleteUser($userParams){
 
     global $conn;
