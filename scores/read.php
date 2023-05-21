@@ -9,33 +9,34 @@ include('function.php');
 
 $requestMethod = $_SERVER["REQUEST_METHOD"];
 
-/*if($requestMethod == "GET"){
-
-    if(isset($_GET['id'])){
-
-        $user = getUser($_GET);
-        echo $user;
-    }else{
-        $userList = getUserList();
-        echo $userList;
-    }
-   
-
-}
-*/
 if($requestMethod == "GET"){
 
-    if(isset($_GET['username'])){
+    if(isset($_GET['id_user'])){
 
-        $user = getUserWithUsernamePassword($_GET);
-        echo $user;
+        $score = getScore($_GET);
+        echo $score;
     }else{
-        $userList = getUserList();
-        echo $userList;
+        $scoreList = getScoreList();
+        echo $scoreList;
     }
    
 
 }
+
+/*if($requestMethod == "GET"){
+
+    if(isset($_GET['id_song'])){
+
+        $score = getScore($_GET);
+        echo $score;
+    }else{
+        $scoreList = getScoreList();
+        echo $scoreList;
+    }
+   
+
+}*/
+
 else{
     $data = [
         'status' => 405,

@@ -29,9 +29,14 @@ function storeUser($userInput){
 
         return error422('Enter your password');
     }
-
-    else{
-
+    elseif{
+        $username_query = "SELECT * FROM users WHERE username ='username'";
+        $username_query_run = mysqli_query($conn, $username_query);
+        if(mysqli_num_rows($username_query_run) > 0 ){
+            echo "This username is already taken"
+        }
+    }
+        else{           
         $query = "INSERT INTO users (username, password) VALUES ( '$username','$password')";
         $result = mysqli_query($conn, $query);
 
@@ -53,8 +58,9 @@ function storeUser($userInput){
             return json_encode($data);
         }
     }
-   
 }
+   
+
 
 //READ USERS
 function getUserList(){
@@ -227,6 +233,54 @@ function deleteUser($userParams){
             'message' => 'User Not found',
         ];
         header("HTTP/1.0 404 Not Found");
+        return json_encode($data);
+    }
+}
+
+
+
+function getUserWithUsernamePassword($userParams){
+
+    global $conn;
+    if($userParams['username'] == null){
+
+        return error422('Enter your username');
+    }
+    if($userParams['password'] == null){
+
+        return error422('Enter your password');
+    }
+    $username = mysqli_real_escape_string($conn, $userParams['username']);
+    $password = mysqli_real_escape_string($conn, $userParams['password']);
+    $query = "SELECT * FROM users WHERE username='$username' AND password = '$password' LIMIT 1";
+    $result = mysqli_query($conn, $query);
+
+    if($result){
+        if(mysqli_num_rows($result)==1){
+
+            $res = mysqli_fetch_assoc($result);
+            $data = [
+                'status' => 200,
+                'message' => 'User Fetched Successfully',
+                'data' => $res
+            ];
+            header("HTTP/1.0 200 Success");
+            return json_encode($data);
+        }else{
+            $data = [
+                'status' => 404,
+                'message' => 'No User Found',
+            ];
+            header("HTTP/1.0 404 Not Found");
+            return json_encode($data);
+        }
+
+    }else{
+        $data = [
+            'status' => 500,
+            'message' => 'Internal Server Error',
+        ];
+        header("HTTP/1.0 500 Internal Server Error");
         return json_encode($data);
     }
 }
