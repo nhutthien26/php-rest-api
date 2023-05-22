@@ -167,7 +167,7 @@ function updateScore($scoreInput, $scoreParams){
 
         return error422('user id not found in URL');
 
-    }elseif($scoreParams['id_user'] == null){
+    }elseif($scoreParams['id_user' ] == null){
 
         return error422('Enter the user id');
     }
@@ -185,11 +185,11 @@ function updateScore($scoreInput, $scoreParams){
     }
     elseif(empty(trim($score))){
 
-        return error422('Enter your password');
+        return error422('Enter your score');
     }
     elseif(empty(trim($star))){
 
-        return error422('Enter your password');
+        return error422('Enter your star');
     }
 
     else{
@@ -216,6 +216,47 @@ function updateScore($scoreInput, $scoreParams){
         }
     }
    
+}
+
+
+//DELETE SCORE
+
+function deleteScore($scoreParams){
+
+    global $conn;
+
+    if(!isset($scoreParams['id_user'])){
+
+        return error422('user id not found in URL');
+
+    }elseif($scoreParams['id_user' ] == null){
+        
+        return error422('Enter the user id');
+    }
+
+    $scoreId = mysqli_real_escape_string($conn, $scoreParams['id_user']);
+
+    $query = "DELETE FROM scores WHERE id_user = '$scoreId' LIMIT 1";
+    $result = mysqli_query($conn, $query);
+
+    if($result){
+        $data = [
+            'status' => 200,
+            'message' => 'Score Deleted Successfully',
+        ];
+        header("HTTP/1.0 200 OK");
+        return json_encode($data);
+
+    }else{
+
+        $data = [
+            'status' => 404,
+            'message' => 'Score Not Found',
+        ];
+        header("HTTP/1.0 404 Not Found");
+        return json_encode($data);
+    }
+
 }
 
 ?>
