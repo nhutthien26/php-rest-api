@@ -25,16 +25,20 @@ function storeUser($userInput){
 
         return error422('Enter your username');
     }
+    elseif ($username) {
+        $username = mysqli_real_escape_string($conn, $_POST['username']); // Lấy giá trị username từ client và sử dụng mysqli_real_escape_string() để tránh SQL injection
+    
+        $username_query = "SELECT * FROM users WHERE username = '$username'";
+        $username_query_run = mysqli_query($conn, $username_query);
+    
+        if (mysqli_num_rows($username_query_run) > 0) {
+            echo "This username is already taken";
+        }
     elseif(empty(trim($password))){
 
         return error422('Enter your password');
     }
-    elseif{
-        $username_query = "SELECT * FROM users WHERE username ='username'";
-        $username_query_run = mysqli_query($conn, $username_query);
-        if(mysqli_num_rows($username_query_run) > 0 ){
-            echo "This username is already taken"
-        }
+    
     }
         else{           
         $query = "INSERT INTO users (username, password) VALUES ( '$username','$password')";
@@ -246,13 +250,13 @@ function getUserWithUsernamePassword($userParams){
 
         return error422('Enter your username');
     }
-    if($userParams['password'] == null){
+    /*if($userParams['password'] == null){
 
         return error422('Enter your password');
-    }
+    }*/
     $username = mysqli_real_escape_string($conn, $userParams['username']);
-    $password = mysqli_real_escape_string($conn, $userParams['password']);
-    $query = "SELECT * FROM users WHERE username='$username' AND password = '$password' LIMIT 1";
+    //$password = mysqli_real_escape_string($conn, $userParams['password']);  /*AND password = '$password'*/
+    $query = "SELECT * FROM users WHERE username='$username' LIMIT 1";
     $result = mysqli_query($conn, $query);
 
     if($result){
