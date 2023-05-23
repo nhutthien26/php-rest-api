@@ -32,12 +32,19 @@ function storeUser($userInput){
         $username_query_run = mysqli_query($conn, $username_query);
     
         if (mysqli_num_rows($username_query_run) > 0) {
-            echo "This username is already taken";
+            $data = [
+                'status' => 400,
+                'message' => 'This username is already taken',
+            ];
+            header("HTTP/1.0 400 Failed");
+            return json_encode($data);
         }
     elseif(empty(trim($password))){
 
         return error422('Enter your password');
-    }
+    }elseif (strlen($password) < 6 || !preg_match('/[\'^£$%&*()}{@#~?><>,|=_+¬-]/', $password)) {
+        
+        return error422('Password must be at least 6 characters long and contain a special character');
     
     }
         else{           
@@ -63,7 +70,7 @@ function storeUser($userInput){
         }
     }
 }
-   
+}   
 
 
 //READ USERS
@@ -250,13 +257,13 @@ function getUserWithUsernamePassword($userParams){
 
         return error422('Enter your username');
     }
-    /*if($userParams['password'] == null){
+    if($userParams['password'] == null){
 
         return error422('Enter your password');
-    }*/
+    }
     $username = mysqli_real_escape_string($conn, $userParams['username']);
-    //$password = mysqli_real_escape_string($conn, $userParams['password']);  /*AND password = '$password'*/
-    $query = "SELECT * FROM users WHERE username='$username' LIMIT 1";
+    $password = mysqli_real_escape_string($conn, $userParams['password']); 
+    $query = "SELECT * FROM users WHERE username='$username'  AND password = '$password' LIMIT 1";
     $result = mysqli_query($conn, $query);
 
     if($result){
