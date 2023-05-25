@@ -157,18 +157,15 @@ function getScore($scoreParams){
     }
 }
 
-//UPDATE SCORE
+//UPDATE SCORE 
 
-function updateScore($scoreInput, $scoreParams){
-
+function updateScore($scoreInput, $scoreParams)
+{
     global $conn;
 
-    if(!isset($scoreParams['id_user'])){
-
+    if (!isset($scoreParams['id_user'])) {
         return error422('user id not found in URL');
-
-    }elseif($scoreParams['id_user' ] == null){
-
+    } elseif ($scoreParams['id_user'] == null) {
         return error422('Enter the user id');
     }
 
@@ -178,35 +175,24 @@ function updateScore($scoreInput, $scoreParams){
     $score = mysqli_real_escape_string($conn, $scoreInput['score']);
     $star = mysqli_real_escape_string($conn, $scoreInput['star']);
 
-
-    if(empty(trim($id_song))){
-
+    if (empty(trim($id_song))) {
         return error422('Enter your id song');
-    }
-    elseif(empty(trim($score))){
-
+    } elseif (empty(trim($score))) {
         return error422('Enter your score');
-    }
-    elseif(empty(trim($star))){
-
+    } elseif (empty(trim($star))) {
         return error422('Enter your star');
-    }
-
-    else{
-
+    } else {
         $query = "UPDATE scores SET id_song='$id_song', score='$score', star='$star' WHERE id_user='$scoreId' LIMIT 1";
         $result = mysqli_query($conn, $query);
 
-        if($result){
-
+        if ($result) {
             $data = [
                 'status' => 200,
                 'message' => 'Score Updated Successfully',
             ];
             header("HTTP/1.0 200 Success");
             return json_encode($data);
-
-        }else{
+        } else {
             $data = [
                 'status' => 500,
                 'message' => 'Internal Server Error',
@@ -215,7 +201,6 @@ function updateScore($scoreInput, $scoreParams){
             return json_encode($data);
         }
     }
-   
 }
 
 
@@ -257,6 +242,141 @@ function deleteScore($scoreParams){
         return json_encode($data);
     }
 
+}
+
+// GET ID_SONG TO DISPLAY USER
+
+
+function getUserWithIDSong($scoreParams){
+    global $conn;
+
+    if($scoreParams['id_song'] == null){
+        return error422('Enter your id song');
+    }
+
+    $idSong = mysqli_real_escape_string($conn, $scoreParams['id_song']);
+
+    // Truy vấn dữ liệu từ bảng scores và join với bảng users
+    $query = "SELECT users.username, scores.score, scores.star
+              FROM scores
+              INNER JOIN users ON scores.id_user = users.id
+              WHERE scores.id_song = '$idSong'";
+
+    // Thực hiện truy vấn
+    $result = mysqli_query($conn, $query);
+    if ($result) {
+        // Mảng để lưu danh sách username
+        $usernames = array();
+        while ($row = mysqli_fetch_assoc($result)) {
+            // Lưu username vào mảng
+            $user = [
+                'username' => $row['username'],
+                'score' => $row['score'],
+                'star' => $row['star']
+
+            ];
+            $users[] = $user;           
+        }   
+        if (!empty($users)) {
+            $data = [
+                'status' => 200,
+                'message' => 'Users Fetched Successfully',
+                'data' => $users
+            ];
+            header("HTTP/1.0 200 OK");
+            return json_encode($data);
+
+        }else{
+
+            $data = [
+                'status' => 404,
+                'message' => 'No User Found',
+            ];
+            header("HTTP/1.0 404 Not Found");
+            return json_encode($data);
+        }
+
+    }else{
+        
+        $data = [
+            'status' => 500,
+            'message' => 'Internal Server Error',
+        ];
+        header("HTTP/1.0 500 Internal Server Error");
+        return json_encode($data);
+    }
+}
+
+
+//Ranking User By Score
+
+function getRankedPlayers($scoreParams) {
+    global $conn;
+
+    if($scoreParams['id_song'] == null){
+        return error422('Enter your id song');
+    }
+
+    $idSong = mysqli_real_escape_string($conn, $scoreParams['id_song']);
+
+    // Truy vấn dữ liệu từ bảng scores và join với bảng users
+    $query = "SELECT users.username, scores.score, scores.star
+              FROM scores
+              INNER JOIN users ON scores.id_user = users.id
+              WHERE scores.id_song = '$idSong'";
+
+    // Thực hiện truy vấn
+    $result = mysqli_query($conn, $query);
+    if ($result) {
+        // Mảng để lưu danh sách username
+        $usernames = array();
+        while ($row = mysqli_fetch_assoc($result)) {
+            // Lưu username vào mảng
+            $user = [
+                'username' => $row['username'],
+                'score' => $row['score'],
+                'star' => $row['star']
+
+            ];
+            $users[] = $user;           
+        }   
+        if (!empty($users)) {
+            // Sắp xếp mảng theo điểm số giảm dần
+            usort($users, function($a, $b) {
+                return $b['score'] - $a['score'];
+            });
+    
+            // Gán hạng cho mỗi người chơi
+            foreach ($users as $key => $user) {
+                $user['rank'] = $key + 1;
+                $users[$key] = $user;
+            }
+    
+            $data = [
+                'status' => 200,
+                'message' => 'Users Fetched Successfully',
+                'data' => $users
+            ];
+            header("HTTP/1.0 200 OK");
+            return json_encode($data);
+        } else {
+            $data = [
+                'status' => 404,
+                'message' => 'No Users Found',
+            ];
+            header("HTTP/1.0 404 Not Found");
+            return json_encode($data);
+        }
+
+    }else{
+        
+        $data = [
+            'status' => 500,
+            'message' => 'Internal Server Error',
+        ];
+        header("HTTP/1.0 500 Internal Server Error");
+        return json_encode($data);
+    }
 }
 
 ?>

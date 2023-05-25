@@ -27,7 +27,7 @@ if ($requestMethod == "GET") {
 
     if (isset($_GET['id_song'])) {
 
-        $score = getUserWithIDSong($_GET);
+        $score = getRankedPlayers($_GET);
         echo $score;
     } else {
         $scoreList = getScoreList();
