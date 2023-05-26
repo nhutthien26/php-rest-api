@@ -386,7 +386,7 @@ function getRankedPlayers($scoreParams) {
 
 function getTopPlayersBySong() {
     global $conn;
-
+    
     // Truy vấn dữ liệu từ bảng scores và join với bảng users
     $query = "SELECT s.id_song, u.username, s.score, s.star
               FROM scores s
@@ -401,12 +401,15 @@ function getTopPlayersBySong() {
     $result = mysqli_query($conn, $query);
     if ($result) {
         // Mảng để lưu danh sách người chơi cao điểm nhất của từng id_song
+
         $topPlayers = array();
         while ($row = mysqli_fetch_assoc($result)) {
             $idSong = $row['id_song'];
+
             // Kiểm tra xem id_song đã tồn tại trong mảng chưa
             if (!array_key_exists($idSong, $topPlayers)) {
                 // Nếu chưa tồn tại, thêm id_song vào mảng và lưu thông tin người chơi
+
                 $topPlayers[$idSong] = array(
                     'id_song' => $idSong,
                     'players' => array()

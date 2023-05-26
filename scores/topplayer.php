@@ -9,25 +9,11 @@ include('function.php');
 
 $requestMethod = $_SERVER["REQUEST_METHOD"];
 
-/*if($requestMethod == "GET"){
-
-    if(isset($_GET['id_user'])){
-
-        $score = getScore($_GET);
-        echo $score;
-    }else{
-        $scoreList = getScoreList();
-        echo $scoreList;
-    }
-  
-
-}*/
-
 if ($requestMethod == "GET") {
 
     if (isset($_GET['id_song'])) {
 
-        $score = getTopPlayersBySong($_GET);
+        $score = getTopPlayersBySong();
         echo $score;
     } else {
         $scoreList = getScoreList();
