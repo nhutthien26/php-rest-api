@@ -10,25 +10,21 @@ include('function.php');
 
 $requestMethod = $_SERVER["REQUEST_METHOD"];
 
-if($requestMethod == 'POST'){
+if ($requestMethod == 'POST') {
+    $contentType = isset($_SERVER["CONTENT_TYPE"]) ? trim($_SERVER["CONTENT_TYPE"]) : '';
 
-    $inputData = json_decode(file_get_contents("php://input"), true);
-    if(empty($inputData)){
-
-
+    if ($contentType === "application/json") {
+        $inputData = json_decode(file_get_contents("php://input"), true);
+        $storeUser = storeUser($inputData);
+    } else {
         $storeUser = storeUser($_POST);
     }
-    else{
-        $storeUser = storeUser($inputData);
-        
-    }
-    echo $storeUser;
 
-}
-else{
+    echo $storeUser;
+} else {
     $data = [
         'status' => 405,
-        'message' => $requestMethod. 'Method Not Allowed',
+        'message' => $requestMethod . ' Method Not Allowed',
     ];
     header("HTTP/1.0 405 Method Not Allowed");
     echo json_encode($data);

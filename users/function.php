@@ -2,7 +2,8 @@
 
 require '../inc/dbcon.php';
 //error422
-function error422($message){
+function error422($message)
+{
 
     $data = [
         'status' => 422,
@@ -13,77 +14,66 @@ function error422($message){
     exit();
 }
 //CREATE USERS
-function storeUser($userInput){
-
+function storeUser($userInput)
+{
     global $conn;
 
-    //$id = mysqli_real_escape_string($conn, $userInput['id']);
     $username = mysqli_real_escape_string($conn, $userInput['username']);
     $password = mysqli_real_escape_string($conn, $userInput['password']);
 
-    if(empty(trim($username))){
-
+    if (empty(trim($username))) {
         return error422('Enter your username');
-    }
-    elseif ($username) {
-        $username = mysqli_real_escape_string($conn, $_POST['username']); // Lấy giá trị username từ client và sử dụng mysqli_real_escape_string() để tránh SQL injection
-    
+    } elseif (empty(trim($password))) {
+        return error422('Enter your password');
+    } elseif (strlen($password) < 6 ) {
+        return error422('Password must be at least 6 characters long and contain a special character');
+    } else {
         $username_query = "SELECT * FROM users WHERE username = '$username'";
         $username_query_run = mysqli_query($conn, $username_query);
-    
+
         if (mysqli_num_rows($username_query_run) > 0) {
             $data = [
                 'status' => 400,
                 'message' => 'This username is already taken',
             ];
-            header("HTTP/1.0 400 Failed");
+            header("HTTP/1.0 400 Bad Request");
             return json_encode($data);
-        }
-    elseif(empty(trim($password))){
+        } else {
+            $query = "INSERT INTO users (username, password) VALUES ('$username', '$password')";
+            $result = mysqli_query($conn, $query);
 
-        return error422('Enter your password');
-    }elseif (strlen($password) < 6 || !preg_match('/[\'^£$%&*()}{@#~?><>,|=_+¬-]/', $password)) {
-        
-        return error422('Password must be at least 6 characters long and contain a special character');
-    
-    }
-        else{           
-        $query = "INSERT INTO users (username, password) VALUES ( '$username','$password')";
-        $result = mysqli_query($conn, $query);
-
-        if($result){
-
-            $data = [
-                'status' => 201,
-                'message' => 'User Created Successfully',
-            ];
-            header("HTTP/1.0 201 Created");
-            return json_encode($data);
-
-        }else{
-            $data = [
-                'status' => 500,
-                'message' => 'Internal Server Error',
-            ];
-            header("HTTP/1.0 500 Internal Server Error");
-            return json_encode($data);
+            if ($result) {
+                $data = [
+                    'status' => 201,
+                    'message' => 'User Created Successfully',
+                ];
+                header("HTTP/1.0 201 Created");
+                return json_encode($data);
+            } else {
+                $data = [
+                    'status' => 500,
+                    'message' => 'Internal Server Error',
+                ];
+                header("HTTP/1.0 500 Internal Server Error");
+                return json_encode($data);
+            }
         }
     }
 }
-}   
 
 
 //READ USERS
-function getUserList(){
+function getUserList()
+{
 
     global $conn;
 
     $query = "SELECT * FROM users";
     $query_run = mysqli_query($conn, $query);
 
-    if($query_run){
+    if ($query_run) {
 
-        if(mysqli_num_rows($query_run) > 0){
+        if (mysqli_num_rows($query_run) > 0) {
 
             $res = mysqli_fetch_all($query_run, MYSQLI_ASSOC);
 
@@ -94,8 +84,7 @@ function getUserList(){
             ];
             header("HTTP/1.0 200 Success");
             return json_encode($data);
-        }
-        else{
+        } else {
             $data = [
                 'status' => 404,
                 'message' => 'No User Found',
@@ -103,8 +92,7 @@ function getUserList(){
             header("HTTP/1.0 404 No User Found");
             return json_encode($data);
         }
-    }
-    else{
+    } else {
         $data = [
             'status' => 500,
             'message' => 'Internal Server Error',
@@ -115,10 +103,11 @@ function getUserList(){
 }
 
 //GET USER WITH ID
-function getUser($userParams){
+function getUser($userParams)
+{
 
     global $conn;
-    if($userParams['id'] == null){
+    if ($userParams['id'] == null) {
 
         return error422('Enter your id');
     }
@@ -126,8 +115,8 @@ function getUser($userParams){
     $query = "SELECT * FROM users WHERE id='$userId' LIMIT 1";
     $result = mysqli_query($conn, $query);
 
-    if($result){
-        if(mysqli_num_rows($result)==1){
+    if ($result) {
+        if (mysqli_num_rows($result) == 1) {
 
             $res = mysqli_fetch_assoc($result);
             $data = [
@@ -137,7 +126,7 @@ function getUser($userParams){
             ];
             header("HTTP/1.0 200 Success");
             return json_encode($data);
-        }else{
+        } else {
             $data = [
                 'status' => 404,
                 'message' => 'No User Found',
@@ -146,7 +135,7 @@ function getUser($userParams){
             return json_encode($data);
         }
 
-    }else{
+    } else {
         $data = [
             'status' => 500,
             'message' => 'Internal Server Error',
@@ -158,15 +147,16 @@ function getUser($userParams){
 
 
 //UPDATE USERS
-function updateUser($userInput, $userParams){
+function updateUser($userInput, $userParams)
+{
 
     global $conn;
 
-    if(!isset($userParams['id'])){
+    if (!isset($userParams['id'])) {
 
         return error422('user id not found in URL');
 
-    }elseif($userParams['id'] == null){
+    } elseif ($userParams['id'] == null) {
 
         return error422('Enter the user id');
     }
@@ -176,21 +166,18 @@ function updateUser($userInput, $userParams){
     $username = mysqli_real_escape_string($conn, $userInput['username']);
     $password = mysqli_real_escape_string($conn, $userInput['password']);
 
-    if(empty(trim($username))){
+    if (empty(trim($username))) {
 
         return error422('Enter your username');
-    }
-    elseif(empty(trim($password))){
+    } elseif (empty(trim($password))) {
 
         return error422('Enter your password');
-    }
-
-    else{
+    } else {
 
         $query = "UPDATE users SET username='$username', password='$password' WHERE id='$userId' LIMIT 1";
         $result = mysqli_query($conn, $query);
 
-        if($result){
+        if ($result) {
 
             $data = [
                 'status' => 200,
@@ -199,7 +186,7 @@ function updateUser($userInput, $userParams){
             header("HTTP/1.0 200 Success");
             return json_encode($data);
 
-        }else{
+        } else {
             $data = [
                 'status' => 500,
                 'message' => 'Internal Server Error',
@@ -208,36 +195,37 @@ function updateUser($userInput, $userParams){
             return json_encode($data);
         }
     }
-   
+
 }
 
 
 //DELETE USERS
-function deleteUser($userParams){
+function deleteUser($userParams)
+{
 
     global $conn;
 
-    if(!isset($userParams['id'])){
+    if (!isset($userParams['id'])) {
 
         return error422('user id not found in URL');
 
-    }elseif($userParams['id'] == null){
+    } elseif ($userParams['id'] == null) {
 
         return error422('Enter the user id');
     }
 
     $userId = mysqli_real_escape_string($conn, $userParams['id']);
     $query = "DELETE FROM users WHERE id='$userId' LIMIT 1";
-    $result = mysqli_query($conn,$query);
+    $result = mysqli_query($conn, $query);
 
-    if($result){
+    if ($result) {
         $data = [
             'status' => 200,
             'message' => 'User Deleted Successfully',
         ];
         header("HTTP/1.0 200 OK");
         return json_encode($data);
-    }else{
+    } else {
 
         $data = [
             'status' => 404,
@@ -250,24 +238,25 @@ function deleteUser($userParams){
 
 
 
-function getUserWithUsernamePassword($userParams){
+function getUserWithUsernamePassword($userParams)
+{
 
     global $conn;
-    if($userParams['username'] == null){
+    if ($userParams['username'] == null) {
 
         return error422('Enter your username');
     }
-    if($userParams['password'] == null){
+    if ($userParams['password'] == null) {
 
         return error422('Enter your password');
     }
     $username = mysqli_real_escape_string($conn, $userParams['username']);
-    $password = mysqli_real_escape_string($conn, $userParams['password']); 
+    $password = mysqli_real_escape_string($conn, $userParams['password']);
     $query = "SELECT * FROM users WHERE username='$username'  AND password = '$password' LIMIT 1";
     $result = mysqli_query($conn, $query);
 
-    if($result){
-        if(mysqli_num_rows($result)==1){
+    if ($result) {
+        if (mysqli_num_rows($result) == 1) {
 
             $res = mysqli_fetch_assoc($result);
             $data = [
@@ -277,7 +266,7 @@ function getUserWithUsernamePassword($userParams){
             ];
             header("HTTP/1.0 200 Success");
             return json_encode($data);
-        }else{
+        } else {
             $data = [
                 'status' => 404,
                 'message' => 'No User Found',
@@ -286,7 +275,7 @@ function getUserWithUsernamePassword($userParams){
             return json_encode($data);
         }
 
-    }else{
+    } else {
         $data = [
             'status' => 500,
             'message' => 'Internal Server Error',

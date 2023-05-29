@@ -388,14 +388,15 @@ function getTopPlayersBySong() {
     global $conn;
     
     // Truy vấn dữ liệu từ bảng scores và join với bảng users
-    $query = "SELECT s.id_song, u.username, s.score, s.star
-              FROM scores s
-              INNER JOIN users u ON s.id_user = u.id
-              INNER JOIN (
-                  SELECT id_song, MAX(score) AS max_score
-                  FROM scores
-                  GROUP BY id_song
-              ) top_scores ON s.id_song = top_scores.id_song AND s.score = top_scores.max_score";
+    $query = "SELECT s.id_song, u.username, s.score, s.star, so.name AS song_name
+    FROM scores s
+    INNER JOIN users u ON s.id_user = u.id
+    INNER JOIN songs so ON s.id_song = so.id
+    INNER JOIN (
+        SELECT id_song, MAX(score) AS max_score
+        FROM scores
+        GROUP BY id_song
+    ) top_scores ON s.id_song = top_scores.id_song AND s.score = top_scores.max_score";
 
     // Thực hiện truy vấn
     $result = mysqli_query($conn, $query);
@@ -405,6 +406,7 @@ function getTopPlayersBySong() {
         $topPlayers = array();
         while ($row = mysqli_fetch_assoc($result)) {
             $idSong = $row['id_song'];
+            $songName = $row['song_name'];
 
             // Kiểm tra xem id_song đã tồn tại trong mảng chưa
             if (!array_key_exists($idSong, $topPlayers)) {
@@ -412,6 +414,7 @@ function getTopPlayersBySong() {
 
                 $topPlayers[$idSong] = array(
                     'id_song' => $idSong,
+                    'song_name' => $songName,
                     'players' => array()
                 );
             }
@@ -429,6 +432,7 @@ function getTopPlayersBySong() {
         foreach ($topPlayers as $idSong => $topPlayer) {
             $data[] = array(
                 'id_song' => $idSong,
+                'song_name' => $topPlayer['song_name'],
                 'players' => $topPlayer['players']
             );
         }
