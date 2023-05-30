@@ -1,6 +1,7 @@
 <?php
 
 require '../inc/dbcon.php';
+
 //error422
 function error422($message){
 
@@ -157,56 +158,115 @@ function getScore($scoreParams){
     }
 }
 
+//GET SCORE WITH ID_USER
+
+function getScoreWithIdUser($scoreParams)
+{
+
+    global $conn;
+    if ($scoreParams['id_user'] == null) {
+
+        return error422('Enter your id user');
+    }
+    $id_user = mysqli_real_escape_string($conn, $scoreParams['id_user']);
+
+    $query = "SELECT * FROM scores WHERE id_user='$id_user' LIMIT 1";
+    $result = mysqli_query($conn, $query);
+
+    if ($result) {
+        if (mysqli_num_rows($result) == 1) {
+
+            $res = mysqli_fetch_assoc($result);
+            $data = [
+                'status' => 200,
+                'message' => 'Score Fetched Successfully',
+                'data' => $res
+            ];
+            header("HTTP/1.0 200 Success");
+            return json_encode($data);
+        } else {
+            $data = [
+                'status' => 404,
+                'message' => 'No Score Found',
+            ];
+            header("HTTP/1.0 404 Not Found");
+            return json_encode($data);
+        }
+
+    } else {
+        $data = [
+            'status' => 500,
+            'message' => 'Internal Server Error',
+        ];
+        header("HTTP/1.0 500 Internal Server Error");
+        return json_encode($data);
+    }
+}
+
+
 //UPDATE SCORE 
 
-function updateScore($scoreInput, $scoreParams)
-{
+function updateScore($scoreInput, $scoreParams){
+
     global $conn;
 
-    if (!isset($scoreParams['id_user'])) {
-        return error422('user id not found in URL');
-    } elseif ($scoreParams['id_user'] == null) {
-        return error422('Enter the user id');
-    }
+    if(!isset($scoreParams['id_user'])){
+        return error422('User id not found in URL');
 
+    }elseif($scoreParams['id_user'] == null){
+
+        return error422('Enter the user id');
+
+    }
     $scoreId = mysqli_real_escape_string($conn, $scoreParams['id_user']);
 
     $id_song = mysqli_real_escape_string($conn, $scoreInput['id_song']);
     $score = mysqli_real_escape_string($conn, $scoreInput['score']);
     $star = mysqli_real_escape_string($conn, $scoreInput['star']);
 
-    if (empty(trim($id_song))) {
 
-        return error422('Enter your id song');
 
-    } elseif (empty(trim($score))) {
+
+    if(empty(trim($id_song))){
+
+        return error422('Enter your song id');
+    }elseif(empty(trim($score))){
 
         return error422('Enter your score');
+    }elseif(empty(trim($star))){
 
-    } elseif (empty(trim($star))) {
-        
         return error422('Enter your star');
-    } else {
+
+    }
+
+    else{
         $query = "UPDATE scores SET id_song='$id_song', score='$score', star='$star' WHERE id_user='$scoreId' LIMIT 1";
         $result = mysqli_query($conn, $query);
 
-        if ($result) {
+        if($result){
+
             $data = [
                 'status' => 200,
                 'message' => 'Score Updated Successfully',
             ];
-            header("HTTP/1.0 200 Success");
+            header("HTTP/1.0 200 Updated");
             return json_encode($data);
-        } else {
+
+
+        }else{
             $data = [
                 'status' => 500,
                 'message' => 'Internal Server Error',
             ];
             header("HTTP/1.0 500 Internal Server Error");
             return json_encode($data);
+
         }
     }
+
 }
+
+
 
 
 //DELETE SCORE

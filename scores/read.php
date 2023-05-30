@@ -9,11 +9,11 @@ include('function.php');
 
 $requestMethod = $_SERVER["REQUEST_METHOD"];
 
-/*if($requestMethod == "GET"){
+if($requestMethod == "GET"){
 
     if(isset($_GET['id_user'])){
 
-        $score = getScore($_GET);
+        $score = getScoreWithIdUser($_GET);
         echo $score;
     }else{
         $scoreList = getScoreList();
@@ -21,9 +21,9 @@ $requestMethod = $_SERVER["REQUEST_METHOD"];
     }
   
 
-}*/
+}
 
-if ($requestMethod == "GET") {
+/*if ($requestMethod == "GET") {
 
     if (isset($_GET['id_song'])) {
 
@@ -35,7 +35,8 @@ if ($requestMethod == "GET") {
     }
 
 
-} else {
+}   */
+    else {
     $data = [
         'status' => 405,
         'message' => $requestMethod . 'Method Not Allowed',
