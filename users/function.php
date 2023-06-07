@@ -25,7 +25,7 @@ function storeUser($userInput)
         return error422('Enter your username');
     } elseif (empty(trim($password))) {
         return error422('Enter your password');
-    } elseif (strlen($password) < 6 ) {
+    } elseif (strlen($password) < 6) {
         return error422('Password must be at least 6 characters long and contain a special character');
     } else {
         $username_query = "SELECT * FROM users WHERE username = '$username'";
@@ -39,7 +39,7 @@ function storeUser($userInput)
             header("HTTP/1.0 400 Bad Request");
             return json_encode($data);
         } else {
-            $query = "INSERT INTO users (username, password) VALUES ('$username', '$password')";
+            $query = "INSERT INTO 'users' ('id', 'username', 'password', 'coin') VALUES (NULL, '$username', '$password', '0')";
             $result = mysqli_query($conn, $query);
 
             if ($result) {
@@ -103,47 +103,64 @@ function getUserList()
 }
 
 //GET USER WITH ID
-function getUser($userParams)
-{
 
+function getUser($userParams) {
+    // Kết nối đến cơ sở dữ liệu
     global $conn;
-    if ($userParams['id'] == null) {
 
+    if($userParams['id'] == null){
         return error422('Enter your id');
     }
-    $userId = mysqli_real_escape_string($conn, $userParams['id']);
-    $query = "SELECT * FROM users WHERE id='$userId' LIMIT 1";
-    $result = mysqli_query($conn, $query);
 
-    if ($result) {
-        if (mysqli_num_rows($result) == 1) {
+    $idUser = mysqli_real_escape_string($conn, $userParams['id']);
+    // Truy vấn để lấy thông tin người dùng theo id
+    $sql = "SELECT id, username, coin FROM users WHERE id = $idUser" ;
+    $result = $conn->query($sql);
 
-            $res = mysqli_fetch_assoc($result);
-            $data = [
-                'status' => 200,
-                'message' => 'User Fetched Successfully',
-                'data' => $res
-            ];
-            header("HTTP/1.0 200 Success");
-            return json_encode($data);
-        } else {
-            $data = [
-                'status' => 404,
-                'message' => 'No User Found',
-            ];
-            header("HTTP/1.0 404 Not Found");
-            return json_encode($data);
+    if ($result->num_rows > 0) {
+        $user = array();
+    
+        // Lấy thông tin người dùng
+        while ($row = $result->fetch_assoc()) {
+            $user["id"] = $row["id"];
+            $user["username"] = $row["username"];
+            $user["coin"] = $row["coin"];
         }
-
+    
+        // Truy vấn để lấy thông tin điểm số của người dùng
+        $scoresSql = "SELECT songs.name, scores.score, scores.star
+                      FROM scores
+                      INNER JOIN songs ON scores.id_song = songs.id
+                      WHERE scores.id_user = $idUser";
+        $scoresResult = $conn->query($scoresSql);
+    
+        if ($scoresResult->num_rows > 0) {
+            $user["scores"] = array();
+    
+            // Lấy thông tin điểm số
+            while ($scoresRow = $scoresResult->fetch_assoc()) {
+                $score = array(
+                    "name" => $scoresRow["name"],
+                    "score" => $scoresRow["score"],
+                    "star" => $scoresRow["star"]
+                );
+    
+                // Thêm thông tin điểm số vào mảng users
+                $user["scores"][] = $score;
+            }
+        } else {
+            $user["scores"] = array();
+        }
+    
+        // Trả về kết quả dưới dạng JSON
+        return $user;
     } else {
-        $data = [
-            'status' => 500,
-            'message' => 'Internal Server Error',
-        ];
-        header("HTTP/1.0 500 Internal Server Error");
-        return json_encode($data);
+        return array('error' => 'User not found');
     }
 }
+
+
+
 
 
 //UPDATE USERS
