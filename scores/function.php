@@ -378,7 +378,7 @@ function getUserWithIDSong($scoreParams){
 function getRankedPlayers($scoreParams) {
     global $conn;
 
-    if($scoreParams['id_song'] == null){
+    if ($scoreParams['id_song'] == null) {
         return error422('Enter your id song');
     }
 
@@ -394,33 +394,36 @@ function getRankedPlayers($scoreParams) {
     $result = mysqli_query($conn, $query);
     if ($result) {
         // Mảng để lưu danh sách username
-        $usernames = array();
+        $users = array();
         while ($row = mysqli_fetch_assoc($result)) {
             // Lưu username vào mảng
             $user = [
                 'username' => $row['username'],
                 'score' => $row['score'],
                 'star' => $row['star']
-
             ];
-            $users[] = $user;           
-        }   
+            $users[] = $user;
+        }
+
         if (!empty($users)) {
             // Sắp xếp mảng theo điểm số giảm dần
-            usort($users, function($a, $b) {
+            usort($users, function ($a, $b) {
                 return $b['score'] - $a['score'];
             });
-    
+
+            // Giới hạn số lượng người chơi hiển thị là 10
+            $limitedUsers = array_slice($users, 0, 10);
+
             // Gán hạng cho mỗi người chơi
-            foreach ($users as $key => $user) {
+            foreach ($limitedUsers as $key => $user) {
                 $user['rank'] = $key + 1;
-                $users[$key] = $user;
+                $limitedUsers[$key] = $user;
             }
-    
+
             $data = [
                 'status' => 200,
                 'message' => 'Users Fetched Successfully',
-                'data' => $users
+                'data' => $limitedUsers
             ];
             header("HTTP/1.0 200 OK");
             return json_encode($data);
@@ -432,9 +435,7 @@ function getRankedPlayers($scoreParams) {
             header("HTTP/1.0 404 Not Found");
             return json_encode($data);
         }
-
-    }else{
-        
+    } else {
         $data = [
             'status' => 500,
             'message' => 'Internal Server Error',
@@ -443,6 +444,7 @@ function getRankedPlayers($scoreParams) {
         return json_encode($data);
     }
 }
+
 
 function getTopPlayersBySong() {
     global $conn;

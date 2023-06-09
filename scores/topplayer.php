@@ -11,14 +11,10 @@ $requestMethod = $_SERVER["REQUEST_METHOD"];
 
 if ($requestMethod == "GET") {
 
-    if (isset($_GET['id_song'])) {
+
 
         $score = getTopPlayersBySong();
         echo $score;
-    } else {
-        $scoreList = getScoreList();
-        echo $scoreList;
-    }
 
 
 } else {
