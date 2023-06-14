@@ -23,6 +23,7 @@ function storeUser($userInput)
     $coin = mysqli_real_escape_string($conn, $userInput['coin']);
     $scoreSongs = $userInput['globalSongScores'];
     $characters = $userInput['characterDetails'];
+    $maps = $userInput['mapDetails'];
 
     if (empty(trim($username))) {
         return error422('Enter your username');
@@ -62,6 +63,13 @@ function storeUser($userInput)
                     $character_query = "INSERT INTO `character_details` (`id_user`, `id_character`) VALUES ('$user_id', '$id_character')";
 
                     mysqli_query($conn, $character_query);
+
+                }
+                foreach ($maps as $map) {
+                    $id_map = mysqli_real_escape_string($conn, $map['idMap']);
+                    $map_query = "INSERT INTO `map_details` (`id_user`, `id_map`) VALUES ('$user_id', '$id_map')";
+
+                    mysqli_query($conn, $map_query);
 
                 }
 
@@ -171,6 +179,29 @@ function getUser($userParams)
             }
         } else {
             $user["characterDetails"] = array();
+        }
+
+        // Truy vấn để lấy thông tin character của người dùng
+        $mapSql = "SELECT maps.id AS id_map
+                         FROM maps
+                         INNER JOIN map_details ON maps.id = map_details.id_map
+                         WHERE map_details.id_user = $idUser";
+        $mapResult = $conn->query($mapSql);
+
+        if ($mapResult->num_rows > 0) {
+            $user["mapDetails"] = array();
+
+            // Lấy thông tin character
+            while ($maprRow = $mapResult->fetch_assoc()) {
+                $map = array(
+                    "id_map" => $maprRow["id_map"],
+                );
+
+                // Thêm thông tin character vào mảng users
+                $user["mapDetails"][] = $map;
+            }
+        } else {
+            $user["mapDetails"] = array();
         }
 
         // Truy vấn để lấy thông tin điểm số của người dùng
