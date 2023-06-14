@@ -22,6 +22,7 @@ function storeUser($userInput)
     $password = mysqli_real_escape_string($conn, $userInput['password']);
     $coin = mysqli_real_escape_string($conn, $userInput['coin']);
     $scoreSongs = $userInput['globalSongScores'];
+    $characters = $userInput['characterDetails'];
 
     if (empty(trim($username))) {
         return error422('Enter your username');
@@ -55,6 +56,13 @@ function storeUser($userInput)
 
                     $score_query = "INSERT INTO `scores` (`id_user`, `id_song`, `score`) VALUES ('$user_id', '$id_song', '$score')";
                     mysqli_query($conn, $score_query);
+                }
+                foreach ($characters as $character) {
+                    $id_character = mysqli_real_escape_string($conn, $character['idCharacter']);
+                    $character_query = "INSERT INTO `character_details` (`id_user`, `id_character`) VALUES ('$user_id', '$id_character')";
+
+                    mysqli_query($conn, $character_query);
+
                 }
 
                 $data = [
@@ -141,6 +149,28 @@ function getUser($userParams)
             $user["id"] = $row["id"];
             $user["username"] = $row["username"];
             $user["coin"] = $row["coin"];
+        }
+        // Truy vấn để lấy thông tin character của người dùng
+        $characterSql = "SELECT characters.id AS id_character
+                         FROM characters
+                         INNER JOIN character_details ON characters.id = character_details.id_character
+                         WHERE character_details.id_user = $idUser";
+        $characterResult = $conn->query($characterSql);
+
+        if ($characterResult->num_rows > 0) {
+            $user["characterDetails"] = array();
+
+            // Lấy thông tin character
+            while ($characterRow = $characterResult->fetch_assoc()) {
+                $character = array(
+                    "id_character" => $characterRow["id_character"],
+                );
+
+                // Thêm thông tin character vào mảng users
+                $user["characterDetails"][] = $character;
+            }
+        } else {
+            $user["characterDetails"] = array();
         }
 
         // Truy vấn để lấy thông tin điểm số của người dùng
@@ -346,7 +376,7 @@ function updateUserScore($userInput)
         $update_coin_query = "UPDATE users SET coin ='$add_coin' WHERE id = '$user_id'";
         $update_coin_result = mysqli_query($conn, $update_coin_query);
 
-        if ($update_result& $update_coin_result) {
+        if ($update_result & $update_coin_result) {
             $data = [
                 'status' => 200,
                 'message' => 'Score updated successfully',
@@ -383,8 +413,74 @@ function updateUserScore($userInput)
             return json_encode($data);
         }
     }
-   
+
 }
 
+
+
+function updateUserCharacter($userInput)
+{
+
+    global $conn;
+
+    $user_id = mysqli_real_escape_string($conn, $userInput['userId']);
+    $id_character = mysqli_real_escape_string($conn, $userInput['characterId']);
+    $coin = mysqli_real_escape_string($conn, $userInput['coin']);
+
+    $update_query = "INSERT INTO character_details (`id_user`, `id_character`) VALUES ('$user_id', '$id_character')";
+    $update_result = mysqli_query($conn, $update_query);
+
+    $update_coin_query = "UPDATE `users` SET `coin` = '$coin' WHERE id = '$user_id'";
+    $update_coin_result = mysqli_query($conn, $update_coin_query);
+
+    if ($update_result & $update_coin_result) {
+        $data = [
+            'status' => 200,
+            'message' => 'Character Updated Successfully >> coin: ' . $coin,
+        ];
+        header("HTTP/1.0 200 Success");
+        return json_encode($data);
+    } else {
+        $data = [
+            'status' => 500,
+            'message' => 'Internal Server Error',
+        ];
+        header("HTTP/1.0 500 Failed");
+        return json_encode($data);
+    }
+}
+
+
+function updateUserMap($userInput)
+{
+
+    global $conn;
+
+    $user_id = mysqli_real_escape_string($conn, $userInput['userId']);
+    $id_map = mysqli_real_escape_string($conn, $userInput['mapId']);
+    $coin = mysqli_real_escape_string($conn, $userInput['coin']);
+
+    $update_query = "INSERT INTO map_details (`id_user`, `id_map`) VALUES ('$user_id', '$id_map')";
+    $update_result = mysqli_query($conn, $update_query);
+
+    $update_coin_query = "UPDATE `users` SET `coin` = '$coin' WHERE id = '$user_id'";
+    $update_coin_result = mysqli_query($conn, $update_coin_query);
+
+    if ($update_result & $update_coin_result) {
+        $data = [
+            'status' => 200,
+            'message' => 'Map Updated Successfully'
+        ];
+        header("HTTP/1.0 200 Success");
+        return json_encode($data);
+    } else {
+        $data = [
+            'status' => 500,
+            'message' => 'Internal Server Error',
+        ];
+        header("HTTP/1.0 500 Failed");
+        return json_encode($data);
+    }
+}
 
 ?>
